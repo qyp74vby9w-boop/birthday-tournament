@@ -60,7 +60,26 @@
     </button>
 
 </div>
+<script type="module">
 
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBtv2vLTZyzhTyVC58XGV1WDLjTrqKZNLA",
+  authDomain: "birthday-tournament-party.firebaseapp.com",
+  projectId: "birthday-tournament-party",
+  storageBucket: "birthday-tournament-party.firebasestorage.app",
+  messagingSenderId: "632430230630",
+  appId: "1:632430230630:web:1b51f934a78d3e18fc01a7"
+};
+
+window.app = initializeApp(firebaseConfig);
+window.db = getFirestore(window.app);
+
+console.log("Firebase подключен");
+
+</script>
 <script type="module" src="app.js"></script>
 
 </body>
