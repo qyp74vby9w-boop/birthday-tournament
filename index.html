@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Турниры</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>Турниры</h1>
+
+<div class="tournaments">
+
+    <div class="card" data-tournament="kicker">
+        <h2>Кикер</h2>
+        <button>Записаться</button>
+    </div>
+
+    <div class="card" data-tournament="beerpong">
+        <h2>Бир-понг</h2>
+        <button>Записаться</button>
+    </div>
+
+    <div class="card" data-tournament="jenga">
+        <h2>Большая дженга</h2>
+        <button>Записаться</button>
+    </div>
+
+</div>
+
+<div id="registrationModal" class="hidden">
+
+    <h2>Регистрация</h2>
+
+    <select id="teamType">
+        <option value="single">Один участник</option>
+        <option value="team">Команда из двух человек</option>
+    </select>
+
+    <div id="singleFields">
+
+        <input id="firstName" placeholder="Имя">
+        <input id="lastName" placeholder="Фамилия">
+
+    </div>
+
+    <div id="teamFields" class="hidden">
+
+        <input id="firstName1" placeholder="Имя участника 1">
+        <input id="lastName1" placeholder="Фамилия участника 1">
+
+        <input id="firstName2" placeholder="Имя участника 2">
+        <input id="lastName2" placeholder="Фамилия участника 2">
+
+    </div>
+
+    <button id="registerBtn">
+        Зарегистрироваться
+    </button>
+
+</div>
+
+<script type="module" src="app.js"></script>
+
+</body>
+</html>
