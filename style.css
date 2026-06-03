@@ -1,0 +1,29 @@
+body{
+    font-family: sans-serif;
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+}
+
+.card{
+    border:1px solid #ccc;
+    border-radius:12px;
+    padding:20px;
+    margin-bottom:15px;
+}
+
+button{
+    padding:10px 20px;
+    cursor:pointer;
+}
+
+.hidden{
+    display:none;
+}
+
+input,select{
+    display:block;
+    width:100%;
+    margin:10px 0;
+    padding:10px;
+}
