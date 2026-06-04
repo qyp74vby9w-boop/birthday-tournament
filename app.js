@@ -1044,6 +1044,11 @@ registerBtn
             message.innerHTML =
                 `✅ Вы успешно зарегистрированы на турнир "${tournamentNames[selectedTournament]}"`;
 
+            message.scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
+
             modal.classList.add("hidden");
             clearRegistrationForm();
 
