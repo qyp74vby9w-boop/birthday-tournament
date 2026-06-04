@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админка турниров</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>Админка</h1>
+<a href="index.html" class="backLink">← Назад к турнирам</a>
+<div id="adminMessage"></div>
+
+
+<div id="adminPanel" class="hidden">
+
+    <div class="card">
+        <h2>Кикер</h2>
+        <button class="adminParticipantsToggle" data-tournament="kicker">
+            Список участников (<span id="admin-count-kicker">0</span>)
+        </button>
+        <div id="admin-list-kicker" class="adminParticipantsList hidden">
+            <div id="admin-kicker"></div>
+        </div>
+        <div id="admin-bracket-kicker" class="adminBracketArea"></div>
+        <button data-tournament="kicker" class="addParticipantBtn">
+            Добавить участника
+        </button>
+        <button data-tournament="kicker" class="clearTournamentBtn">
+            Очистить список Кикера
+        </button>
+        <button data-tournament="kicker" class="createBracketBtn">
+            Создать сетку
+        </button>
+        <button data-tournament="kicker" class="resetBracketBtn danger">
+            Сбросить сетку
+        </button>
+    </div>
+
+    <div class="card">
+        <h2>Бир-понг</h2>
+        <button class="adminParticipantsToggle" data-tournament="beerpong">
+            Список участников (<span id="admin-count-beerpong">0</span>)
+        </button>
+        <div id="admin-list-beerpong" class="adminParticipantsList hidden">
+            <div id="admin-beerpong"></div>
+        </div>
+        <div id="admin-bracket-beerpong" class="adminBracketArea"></div>
+        <button data-tournament="beerpong" class="addParticipantBtn">
+            Добавить участника
+        </button>
+        <button data-tournament="beerpong" class="clearTournamentBtn">
+            Очистить список Бир-понга
+        </button>
+        <button data-tournament="beerpong" class="createBracketBtn">
+            Создать сетку
+        </button>
+        <button data-tournament="beerpong" class="resetBracketBtn danger">
+            Сбросить сетку
+        </button>
+    </div>
+
+    <div class="card">
+        <h2>Большая дженга</h2>
+        <button class="adminParticipantsToggle" data-tournament="jenga">
+            Список участников (<span id="admin-count-jenga">0</span>)
+        </button>
+        <div id="admin-list-jenga" class="adminParticipantsList hidden">
+            <div id="admin-jenga"></div>
+        </div>
+        <div id="admin-bracket-jenga" class="adminBracketArea"></div>
+        <button data-tournament="jenga" class="addParticipantBtn">
+            Добавить участника
+        </button>
+        <button data-tournament="jenga" class="clearTournamentBtn">
+            Очистить список Большой дженги
+        </button>
+        <button data-tournament="jenga" class="createBracketBtn">
+            Создать сетку
+        </button>
+        <button data-tournament="jenga" class="resetBracketBtn danger">
+            Сбросить сетку
+        </button>
+    </div>
+
+</div>
+
+<div id="adminAddModal" class="hidden">
+    <div class="modalHeader">
+        <h2 id="adminAddTitle">Добавить участника</h2>
+        <button id="adminCancelAddBtn" type="button">Закрыть</button>
+    </div>
+
+    <select id="adminTeamType">
+        <option value="single">Один участник</option>
+        <option value="team">Команда из двух человек</option>
+    </select>
+
+    <div id="adminSingleFields">
+        <input id="adminFirstName" placeholder="Имя">
+        <input id="adminLastName" placeholder="Фамилия">
+    </div>
+
+    <div id="adminTeamFields" class="hidden">
+        <input id="adminFirstName1" placeholder="Имя участника 1">
+        <input id="adminLastName1" placeholder="Фамилия участника 1">
+        <input id="adminFirstName2" placeholder="Имя участника 2">
+        <input id="adminLastName2" placeholder="Фамилия участника 2">
+    </div>
+
+    <button id="adminSaveParticipantBtn">Добавить</button>
+</div>
+
+<script type="module" src="admin.js"></script>
+
+</body>
+</html>

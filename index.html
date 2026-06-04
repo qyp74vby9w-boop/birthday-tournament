@@ -8,30 +8,53 @@
 </head>
 <body>
 
-<h1>Турниры</h1>
+<div class="eventLogo">
+    <div class="eventLogoNumber">33</div>
+    <div class="eventLogoText">года выдержки</div>
+</div>
 
+<h1>Турниры</h1>
+<div id="message"></div>
 <div class="tournaments">
 
     <div class="card" data-tournament="kicker">
         <h2>Кикер</h2>
-        <button>Записаться</button>
+        <p>Участников: <span id="count-kicker">0</span></p>
+        <button class="registerButton">Записаться</button>
+        <button class="participantsButton">Список участников</button>
+        <div class="participantsList hidden" id="list-kicker"></div>
     </div>
 
     <div class="card" data-tournament="beerpong">
         <h2>Бир-понг</h2>
-        <button>Записаться</button>
+        <p>Участников: <span id="count-beerpong">0</span></p>
+        <button class="registerButton">Записаться</button>
+        <button class="participantsButton">Список участников</button>
+        <div class="participantsList hidden" id="list-beerpong"></div>
     </div>
 
     <div class="card" data-tournament="jenga">
         <h2>Большая дженга</h2>
-        <button>Записаться</button>
+        <p>Участников: <span id="count-jenga">0</span></p>
+        <button class="registerButton">Записаться</button>
+        <button class="participantsButton">Список участников</button>
+        <div class="participantsList hidden" id="list-jenga"></div>
     </div>
 
 </div>
 
+<section id="bracketrySection">
+    <h2>Турнирные сетки</h2>
+    <div id="bracketry-kicker"></div>
+    <div id="bracketry-beerpong"></div>
+    <div id="bracketry-jenga"></div>
+</section>
+
 <div id="registrationModal" class="hidden">
 
-    <h2>Регистрация</h2>
+    <div class="modalHeader">
+        <h2>Регистрация</h2>
+    </div>
 
     <select id="teamType">
         <option value="single">Один участник</option>
@@ -60,26 +83,7 @@
     </button>
 
 </div>
-<script type="module">
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBtv2vLTZyzhTyVC58XGV1WDLjTrqKZNLA",
-  authDomain: "birthday-tournament-party.firebaseapp.com",
-  projectId: "birthday-tournament-party",
-  storageBucket: "birthday-tournament-party.firebasestorage.app",
-  messagingSenderId: "632430230630",
-  appId: "1:632430230630:web:1b51f934a78d3e18fc01a7"
-};
-
-window.app = initializeApp(firebaseConfig);
-window.db = getFirestore(window.app);
-
-console.log("Firebase подключен");
-
-</script>
 <script type="module" src="app.js"></script>
 
 </body>

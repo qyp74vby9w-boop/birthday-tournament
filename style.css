@@ -1,29 +1,712 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700&display=swap');
+
+:root{
+    color-scheme:dark;
+    --bg:#050505;
+    --panel:#111;
+    --panel-2:#151515;
+    --line:rgba(255,255,255,.12);
+    --line-strong:rgba(125,238,255,.34);
+    --text:#f5f7fa;
+    --muted:#a5adba;
+    --dim:#6f7782;
+    --cyan:#5ee9ff;
+    --blue:#4f7cff;
+    --violet:#8d68ff;
+    --green:#66ffb3;
+    --red:#ff5f7d;
+    --glow:0 0 24px rgba(94,233,255,.16);
+}
+
+*{
+    box-sizing:border-box;
+}
+
+html{
+    background:var(--bg);
+}
+
 body{
-    font-family: sans-serif;
-    max-width: 800px;
-    margin: auto;
-    padding: 20px;
+    max-width:1040px;
+    margin:0 auto;
+    padding:28px 20px 56px;
+    background:
+        radial-gradient(circle at top left, rgba(94,233,255,.09), transparent 34rem),
+        radial-gradient(circle at top right, rgba(141,104,255,.08), transparent 30rem),
+        var(--bg);
+    color:var(--text);
+    font-family:'Manrope', system-ui, sans-serif;
+    letter-spacing:0;
+}
+
+a{
+    color:var(--cyan);
+    text-decoration:none;
+}
+
+a:hover{
+    text-shadow:0 0 14px rgba(94,233,255,.55);
+}
+
+.backLink{
+    display:inline-flex;
+    align-items:center;
+    margin:12px 0 28px;
+    padding:10px 16px;
+    border:1px solid rgba(94,233,255,.34);
+    border-radius:999px;
+    background:rgba(255,255,255,.035);
+    color:var(--text);
+    text-decoration:none;
+    box-shadow:0 0 18px rgba(94,233,255,.08);
+}
+
+h1{
+    margin:0 0 24px;
+    color:#fff;
+    font-size:clamp(34px, 6vw, 58px);
+    font-weight:500;
+    letter-spacing:0;
+    text-shadow:0 0 28px rgba(94,233,255,.22);
+}
+
+.eventLogo + h1{
+    font-family:'Orbitron', sans-serif;
+    font-weight:600;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+}
+
+.eventLogo{
+    display:inline-flex;
+    align-items:flex-end;
+    gap:14px;
+    margin:4px 0 18px;
+    padding:12px 34px 12px 18px;
+    min-width:320px;
+    border:1px solid rgba(255,255,255,.14);
+    border-radius:18px;
+    background:linear-gradient(145deg, rgba(255,255,255,.045), rgba(255,255,255,.015));
+    color:#fff;
+    font-family:'Cormorant Garamond', serif;
+    box-shadow:0 0 28px rgba(94,233,255,.10);
+}
+
+.eventLogoNumber{
+    font-size:clamp(58px, 11vw, 104px);
+    font-weight:700;
+    line-height:.78;
+    text-shadow:0 0 30px rgba(94,233,255,.22);
+}
+
+.eventLogoText{
+    min-width:170px;
+    padding-bottom:4px;
+    color:#dfe7ee;
+    font-size:clamp(22px, 4vw, 34px);
+    font-weight:600;
+    line-height:.9;
+    white-space:nowrap;
+}
+
+h2,h3,h4{
+    color:#fff;
+    font-weight:500;
+    letter-spacing:0;
+}
+
+h2{
+    margin-top:0;
+}
+
+.card > h2{
+    font-family:'Bebas Neue', sans-serif;
+    font-size:clamp(1.62rem, 3.45vw, 2.05rem);
+    font-weight:400;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+}
+
+.tournaments{
+    display:grid;
+    gap:18px;
 }
 
 .card{
-    border:1px solid #ccc;
-    border-radius:12px;
-    padding:20px;
-    margin-bottom:15px;
+    position:relative;
+    overflow:hidden;
+    margin-bottom:18px;
+    padding:22px;
+    border:1px solid var(--line);
+    border-radius:18px;
+    background:linear-gradient(145deg, rgba(21,21,21,.96), rgba(10,10,10,.98));
+    box-shadow:0 18px 48px rgba(0,0,0,.34), var(--glow);
+    transition:border-color .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+
+.card::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    background:linear-gradient(90deg, rgba(94,233,255,.14), transparent 28%, rgba(141,104,255,.10));
+    opacity:.35;
+}
+
+.card:hover{
+    transform:translateY(-2px);
+    border-color:var(--line-strong);
+    box-shadow:0 22px 58px rgba(0,0,0,.42), 0 0 34px rgba(94,233,255,.18);
+}
+
+.card > *{
+    position:relative;
+}
+
+.card p{
+    color:var(--muted);
 }
 
 button{
-    padding:10px 20px;
+    min-height:42px;
+    padding:10px 18px;
+    border:1px solid rgba(94,233,255,.38);
+    border-radius:999px;
+    background:linear-gradient(180deg, rgba(25,25,25,.96), rgba(10,10,10,.96));
+    color:var(--text);
     cursor:pointer;
+    font:inherit;
+    font-weight:650;
+    box-shadow:0 0 0 rgba(94,233,255,0);
+    transition:background .16s ease, border-color .16s ease, box-shadow .16s ease, transform .16s ease, opacity .16s ease;
+}
+
+button:hover:not(:disabled){
+    border-color:var(--cyan);
+    box-shadow:0 0 18px rgba(94,233,255,.24);
+    transform:translateY(-1px);
+}
+
+button:active:not(:disabled){
+    transform:translateY(0);
+}
+
+button:disabled{
+    cursor:not-allowed;
+    opacity:.45;
+    box-shadow:none;
+}
+
+.registerButton,
+.createBracketBtn,
+#registerBtn,
+#adminSaveParticipantBtn{
+    border-color:rgba(94,233,255,.55);
+    background:linear-gradient(135deg, rgba(94,233,255,.22), rgba(79,124,255,.18) 48%, rgba(141,104,255,.14));
+}
+
+.clearTournamentBtn,
+.resetBracketBtn,
+.danger,
+.slot-menu .danger{
+    border-color:rgba(255,95,125,.46);
+    color:#ffd5dc;
+}
+
+.clearTournamentBtn:hover:not(:disabled),
+.resetBracketBtn:hover:not(:disabled),
+.danger:hover:not(:disabled),
+.slot-menu .danger:hover:not(:disabled){
+    border-color:var(--red);
+    box-shadow:0 0 18px rgba(255,95,125,.18);
 }
 
 .hidden{
     display:none;
 }
 
+.modalHeader{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+}
+
+.modalHeader h2{
+    margin:0;
+}
+
 input,select{
     display:block;
     width:100%;
-    margin:10px 0;
-    padding:10px;
+    margin:12px 0;
+    padding:13px 14px;
+    border:1px solid rgba(255,255,255,.14);
+    border-radius:12px;
+    outline:none;
+    background:#0d0d0d;
+    color:var(--text);
+    font:inherit;
+    transition:border-color .16s ease, box-shadow .16s ease, background .16s ease;
+}
+
+input::placeholder{
+    color:var(--dim);
+}
+
+input:focus,
+select:focus{
+    border-color:var(--cyan);
+    background:#101010;
+    box-shadow:0 0 0 3px rgba(94,233,255,.12);
+}
+
+#registrationModal,
+#adminAddModal{
+    margin:20px 0;
+    padding:20px;
+    border:1px solid var(--line);
+    border-radius:18px;
+    background:rgba(12,12,12,.98);
+    box-shadow:0 18px 48px rgba(0,0,0,.42), var(--glow);
+}
+
+#message,
+#adminMessage{
+    display:none;
+    margin:20px 0;
+    padding:15px 16px;
+    border:1px solid rgba(102,255,179,.22);
+    border-left:4px solid var(--green);
+    border-radius:12px;
+    background:rgba(10,18,16,.92);
+    color:#dfffee;
+}
+
+#adminMessage:not(:empty){
+    display:block;
+}
+
+.participantsButton{
+    margin-left:8px;
+}
+
+.participantsList,
+.adminParticipantsList{
+    margin-top:16px;
+    margin-bottom:16px;
+    padding-top:12px;
+    border-top:1px solid var(--line);
+}
+
+.participantsList p,
+.adminParticipantsList p,
+.adminParticipantsList #admin-kicker > div,
+.adminParticipantsList #admin-beerpong > div,
+.adminParticipantsList #admin-jenga > div{
+    margin:8px 0;
+    padding:10px 12px;
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:12px;
+    background:rgba(255,255,255,.035);
+    color:var(--muted);
+    font-weight:400;
+}
+
+.adminParticipantsToggle{
+    margin-bottom:4px;
+}
+
+#bracketrySection{
+    margin-top:34px;
+}
+
+.bracketryTournament{
+    margin-top:24px;
+    padding-top:18px;
+    border-top:1px solid var(--line);
+}
+
+.bracketryTournament h3{
+    margin-bottom:14px;
+    font-size:clamp(1.5rem, 3vw, 1.8rem);
+    font-weight:500;
+}
+
+.tournamentChampion{
+    margin:0 0 24px;
+    padding:20px;
+    border:1px solid rgba(255,215,0,.35);
+    border-radius:16px;
+    background:
+        linear-gradient(135deg, rgba(255,215,0,.10), rgba(255,255,255,.025)),
+        rgba(255,215,0,.08);
+    text-align:center;
+    box-shadow:
+        0 0 20px rgba(255,215,0,.15),
+        inset 0 0 24px rgba(255,215,0,.05);
+}
+
+.championIcon{
+    margin-bottom:8px;
+    font-size:40px;
+    line-height:1;
+}
+
+.championLabel{
+    color:rgba(255,255,255,.76);
+    font-size:14px;
+    font-weight:500;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+}
+
+.championName{
+    margin-top:6px;
+    color:#fff;
+    font-size:24px;
+    font-weight:600;
+    text-shadow:0 0 18px rgba(255,215,0,.32);
+}
+
+.bracketryScroller{
+    overflow-x:auto;
+    overflow-y:visible;
+    overscroll-behavior-x:contain;
+    overscroll-behavior-y:auto;
+    padding:14px 0 16px;
+    scrollbar-color:rgba(94,233,255,.55) rgba(255,255,255,.08);
+}
+
+.bracketryWrapper{
+    min-width:680px;
+    padding:8px;
+}
+
+.bracketryWrapper :is([class*="match"], [class*="Match"]){
+    border-color:rgba(255,255,255,.14) !important;
+}
+
+.bracketryWrapper :is([class*="match"], [class*="Match"], [class*="round"], [class*="Round"]){
+    color:var(--text);
+}
+
+.bracketryWrapper :is([class*="player"], [class*="Player"], [class*="side"], [class*="Side"]){
+    color:var(--text);
+    font-weight:400;
+}
+
+.bracketryWrapper :is([class*="connector"], [class*="Connector"], svg path, svg line){
+    stroke:rgba(94,233,255,.38) !important;
+}
+
+.bracketryPlayerWinner{
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    min-height:auto;
+    margin:-4px;
+    padding:6px 14px 6px 10px;
+    line-height:1.15;
+    border:none;
+    border-radius:0;
+    background:linear-gradient(90deg, rgba(34,197,94,.42), rgba(34,197,94,.18));
+    color:#fff;
+    font-weight:600;
+    box-shadow:0 0 18px rgba(34,197,94,.28);
+    text-shadow:0 0 10px rgba(34,197,94,.45);
+}
+
+.bracketryPlayerWinner::before{
+    content:none;
+}
+
+.bracketryPlayerWinner::after{
+    content:none;
+}
+
+.bracketryPlayerChampion{
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    min-height:auto;
+    margin:-4px;
+    padding:6px 14px 6px 10px;
+    line-height:1.15;
+    border:none;
+    border-radius:0;
+    background:linear-gradient(90deg, rgba(255,215,0,.40), rgba(255,215,0,.16));
+    color:#fff;
+    font-weight:650;
+    box-shadow:0 0 18px rgba(255,215,0,.30);
+    text-shadow:0 0 10px rgba(255,215,0,.45);
+}
+
+.bracketryPlayerChampion::before,
+.bracketryPlayerChampion::after{
+    content:none;
+}
+
+.bracketryPlayerLoser{
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    min-height:auto;
+    margin:-4px;
+    padding:6px 14px 6px 10px;
+    line-height:1.15;
+    border:none;
+    border-radius:0;
+    background:linear-gradient(90deg, rgba(239,68,68,.34), rgba(239,68,68,.14));
+    color:rgba(255,255,255,.62);
+    font-weight:400;
+    box-shadow:0 0 14px rgba(239,68,68,.18);
+}
+
+.bracketryPlayerLoser::before{
+    content:none;
+}
+
+.bracketryPlayerLoser::after{
+    content:none;
+}
+
+.matchMeta{
+    margin-bottom:8px;
+    color:var(--dim);
+    font-size:12px;
+}
+
+.versus{
+    margin:8px 0;
+    color:var(--dim);
+    text-align:center;
+    font-size:12px;
+}
+
+.adminBracketEditor{
+    margin-top:18px;
+    padding-top:14px;
+    border-top:1px solid var(--line);
+}
+
+.adminBracketBoard{
+    display:flex;
+    gap:16px;
+    overflow-x:auto;
+    padding-bottom:14px;
+    scrollbar-color:rgba(94,233,255,.55) rgba(255,255,255,.08);
+}
+
+.adminBracketArea{
+    margin-bottom:72px;
+}
+
+.adminBracketRound{
+    flex:0 0 250px;
+    min-width:250px;
+}
+
+.adminMatchCard{
+    margin-bottom:12px;
+    padding:12px;
+    border:1px solid var(--line);
+    border-radius:14px;
+    background:rgba(12,12,12,.96);
+    box-shadow:0 10px 26px rgba(0,0,0,.26);
+}
+
+.bracket-slot{
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    min-height:40px;
+    margin-top:8px;
+    padding:9px 38px 9px 12px;
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:10px;
+    background:#121212;
+    color:var(--text);
+    box-shadow:0 1px 2px rgba(0,0,0,.28);
+}
+
+.bracket-slot.empty{
+    color:var(--dim);
+    background:#0d0d0d;
+}
+
+.bracket-slot.winner{
+    border-color:rgba(34,197,94,.9);
+    background:linear-gradient(90deg, rgba(34,197,94,.25), rgba(34,197,94,.08));
+    box-shadow:0 0 14px rgba(34,197,94,.30);
+}
+
+.bracket-slot.loser{
+    border-color:rgba(239,68,68,.78);
+    background:linear-gradient(90deg, rgba(239,68,68,.20), rgba(239,68,68,.06));
+    color:rgba(255,255,255,.78);
+    box-shadow:0 0 12px rgba(239,68,68,.22);
+}
+
+.bracket-slot.champion{
+    border-color:rgba(255,215,0,.92);
+    background:linear-gradient(90deg, rgba(255,215,0,.30), rgba(255,215,0,.09));
+    color:#fff;
+    box-shadow:
+        0 0 18px rgba(255,215,0,.48),
+        inset 0 0 16px rgba(255,215,0,.10);
+}
+
+.slot-name{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    font-weight:400;
+    line-height:1.25;
+}
+
+.slot-menu-btn{
+    position:absolute;
+    top:7px;
+    right:7px;
+    width:26px;
+    min-height:26px;
+    height:26px;
+    padding:0;
+    border:1px solid rgba(94,233,255,.26);
+    border-radius:999px;
+    background:#0b0b0b;
+    color:var(--cyan);
+    line-height:1;
+}
+
+.slot-menu{
+    display:none;
+    position:absolute;
+    top:36px;
+    right:7px;
+    z-index:20;
+    min-width:140px;
+    padding:6px;
+    border:1px solid rgba(255,255,255,.14);
+    border-radius:12px;
+    background:#101010;
+    box-shadow:0 12px 28px rgba(0,0,0,.46), 0 0 20px rgba(94,233,255,.10);
+}
+
+.slot-menu.open{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+}
+
+.slot-menu button{
+    width:100%;
+    min-height:36px;
+    padding:8px 10px;
+    border-radius:10px;
+    text-align:left;
+}
+
+.bracketParticipantPicker{
+    position:fixed;
+    inset:0;
+    z-index:20;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    background:rgba(0,0,0,.72);
+    backdrop-filter:blur(8px);
+}
+
+.bracketParticipantPicker.hidden{
+    display:none;
+}
+
+.bracketParticipantPickerInner{
+    width:100%;
+    max-width:440px;
+    max-height:80vh;
+    overflow:auto;
+    padding:18px;
+    border:1px solid var(--line);
+    border-radius:18px;
+    background:#101010;
+    box-shadow:0 24px 60px rgba(0,0,0,.5), var(--glow);
+}
+
+.bracketParticipantPickerList{
+    display:grid;
+    gap:8px;
+}
+
+.bracketParticipantOption{
+    text-align:left;
+}
+
+@media (max-width:640px){
+    body{
+        padding:20px 14px 44px;
+    }
+
+    .card{
+        padding:18px;
+    }
+
+    .eventLogo{
+        width:100%;
+        justify-content:center;
+        min-width:0;
+        padding-right:28px;
+    }
+
+    button{
+        width:100%;
+        margin-top:8px;
+    }
+
+    .participantsButton{
+        margin-left:0;
+    }
+
+    .modalHeader{
+        align-items:flex-start;
+        flex-direction:column;
+    }
+
+    .bracketryWrapper{
+        min-width:620px;
+    }
+
+    .adminBracketRound{
+        flex-basis:230px;
+        min-width:230px;
+    }
+}
+
+/* Keep Bracketry native result icons readable in the dark theme */
+.bracketryWrapper :is([class*="winner"], [class*="Winner"]) :is(svg, path, [class*="icon"], [class*="Icon"]),
+.bracketryWrapper :is([aria-label*="winner"], [aria-label*="Winner"], [title*="winner"], [title*="Winner"]) :is(svg, path),
+.bracketryWrapper :is(svg, path)[class*="winner"],
+.bracketryWrapper :is(svg, path)[class*="Winner"]{
+    color:#7dffb2 !important;
+    fill:#7dffb2 !important;
+    stroke:#7dffb2 !important;
+    filter:
+        drop-shadow(0 0 6px #22c55e)
+        drop-shadow(0 0 14px rgba(34,197,94,.85));
+}
+
+.bracketryWrapper :is([class*="loser"], [class*="Loser"]) :is(svg, path, [class*="icon"], [class*="Icon"]),
+.bracketryWrapper :is([aria-label*="loser"], [aria-label*="Loser"], [title*="loser"], [title*="Loser"]) :is(svg, path),
+.bracketryWrapper :is(svg, path)[class*="loser"],
+.bracketryWrapper :is(svg, path)[class*="Loser"]{
+    color:#ff7a8b !important;
+    fill:#ff7a8b !important;
+    stroke:#ff7a8b !important;
+    filter:
+        drop-shadow(0 0 6px #ef4444)
+        drop-shadow(0 0 14px rgba(239,68,68,.75));
 }
