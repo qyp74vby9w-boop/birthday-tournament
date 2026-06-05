@@ -3,7 +3,6 @@ import {
     getFirestore,
     collection,
     addDoc,
-    getDocs,
     doc,
     setDoc,
     onSnapshot
@@ -28,6 +27,7 @@ const brackets = {};
 const bracketryInstances = {};
 const bracketryDataCache = {};
 const bracketSubscriptions = {};
+let participantsSubscription = null;
 let bracketryModulePromise = null;
 
 const modal = document.getElementById("registrationModal");
@@ -36,8 +36,8 @@ const registerBtn = document.getElementById("registerBtn");
 const teamType = document.getElementById("teamType");
 
 const tournamentNames = {
-    kicker: "Кикер",
     beerpong: "Бир-понг",
+    kicker: "Кикер",
     jenga: "Большая дженга"
 };
 
@@ -97,13 +97,10 @@ function loadBracketryLibrary() {
 
 async function renderBracketry(tournament, bracket) {
 
-    console.time(`renderBracketry:${tournament}`);
-
     const container = document.getElementById(`bracketry-${tournament}`);
     const normalizedBracket = normalizeBracket(bracket);
 
     if (!container) {
-        console.timeEnd(`renderBracketry:${tournament}`);
         return;
     }
 
@@ -122,7 +119,6 @@ async function renderBracketry(tournament, bracket) {
                 <p>Сетка ещё не создана</p>
             </div>
         `;
-        console.timeEnd(`renderBracketry:${tournament}`);
         return;
     }
 
@@ -133,7 +129,6 @@ async function renderBracketry(tournament, bracket) {
         bracketryInstances[tournament]
         && bracketryDataCache[tournament] === bracketryDataKey
     ) {
-        console.timeEnd(`renderBracketry:${tournament}`);
         return;
     }
 
@@ -147,7 +142,7 @@ async function renderBracketry(tournament, bracket) {
     container.innerHTML = `
         <div class="bracketryTournament">
             <h3>${escapeHtml(tournamentNames[tournament])}</h3>
-            ${renderChampionCard(normalizedBracket)}
+            ${renderChampionCard(tournament, normalizedBracket)}
             <div class="bracketryScroller">
                 <div class="bracketryWrapper"></div>
             </div>
@@ -198,8 +193,6 @@ async function renderBracketry(tournament, bracket) {
 
         console.error(error);
         wrapper.innerHTML = "<p>Bracketry не загрузилась. Старая сетка ниже остаётся доступной.</p>";
-    } finally {
-        console.timeEnd(`renderBracketry:${tournament}`);
     }
 }
 
@@ -403,7 +396,13 @@ function getTournamentChampion(bracket) {
     return getMatchWinner(finalMatch);
 }
 
-function renderChampionCard(bracket) {
+const championPrizeImages = {
+    beerpong: "assets/Gold.Beer.Pong.png",
+    kicker: "assets/Gold.kicker.png",
+    jenga: "assets/Gold.Jenga.png"
+};
+
+function renderChampionCard(tournament, bracket) {
 
     const champion = getTournamentChampion(bracket);
 
@@ -411,11 +410,22 @@ function renderChampionCard(bracket) {
         return "";
     }
 
+    const prizeImage = championPrizeImages[tournament];
+
     return `
         <div class="tournamentChampion">
-            <div class="championIcon">🏆</div>
-            <div class="championLabel">Победитель турнира</div>
-            <div class="championName">${escapeHtml(champion.label)}</div>
+            <div class="championPrizeWrap">
+                <img
+                    class="championPrize"
+                    src="${prizeImage}"
+                    alt=""
+                    aria-hidden="true"
+                />
+            </div>
+            <div class="championText">
+                <div class="championLabel">Победитель турнира</div>
+                <div class="championName">${escapeHtml(champion.label)}</div>
+            </div>
         </div>
     `;
 }
@@ -905,23 +915,28 @@ function clearRegistrationForm() {
     document.getElementById("teamFields").classList.add("hidden");
 }
 
-async function loadParticipants() {
+function subscribeToParticipants() {
 
-    console.time("loadParticipants");
-
-    try {
-
-        const snapshot =
-            await getDocs(collection(db, "participants"));
-
-        participants = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
-
-    } finally {
-        console.timeEnd("loadParticipants");
+    if (participantsSubscription) {
+        return;
     }
+
+    participantsSubscription = onSnapshot(
+        collection(db, "participants"),
+        snapshot => {
+
+            participants = snapshot.docs.map(item => ({
+                id: item.id,
+                ...item.data()
+            }));
+
+            updateCounters();
+            updateVisibleParticipantsLists();
+        },
+        error => {
+            console.error(error);
+        }
+    );
 }
 
 function updateCounters() {
@@ -950,21 +965,12 @@ function updateCounters() {
         counts.jenga;
 }
 
-async function refreshTournaments() {
-
-    await loadParticipants();
-    updateCounters();
-    updateVisibleParticipantsLists();
-}
-
 registerBtn
     .addEventListener("click", async () => {
 
         if (isRegistering) {
             return;
         }
-
-        console.time("registration");
 
         try {
             isRegistering = true;
@@ -1025,32 +1031,27 @@ registerBtn
                 return;
             }
 
-            const participantRef = await addDoc(
+            await addDoc(
                 collection(db, "participants"),
                 participantData
             );
-
-            const savedParticipant = {
-                id: participantRef.id,
-                ...participantData
-            };
-
-            participants.push(savedParticipant);
-            updateCounters();
-            renderParticipantsList(savedParticipant.tournament);
 
             message.style.display = "block";
 
             message.innerHTML =
                 `✅ Вы успешно зарегистрированы на турнир "${tournamentNames[selectedTournament]}"`;
 
-            message.scrollIntoView({
-                behavior: "smooth",
-                block: "center"
-            });
-
             modal.classList.add("hidden");
             clearRegistrationForm();
+
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: "smooth"
+                    });
+                }, 50);
+            });
 
         } catch (error) {
 
@@ -1065,7 +1066,6 @@ registerBtn
             isRegistering = false;
             registerBtn.disabled = false;
             registerBtn.textContent = "Зарегистрироваться";
-            console.timeEnd("registration");
 
         }
 
@@ -1075,8 +1075,69 @@ document.querySelectorAll(".participantsList").forEach(list => {
     list.innerHTML = "<p>Загрузка...</p>";
 });
 
-refreshTournaments().catch(error => {
-    console.error(error);
-});
+let tournamentParallaxFrame = null;
 
+function updateTournamentParallax() {
+
+    const images = document.querySelectorAll(".tournamentBg");
+
+    if (images.length === 0) {
+        return;
+    }
+
+    images.forEach(image => {
+
+        const card = image.closest(".card");
+
+        if (!card) {
+            return;
+        }
+
+        const rect = card.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const progress =
+            (viewportHeight - rect.top) / (viewportHeight + rect.height);
+
+        const clamped = Math.max(0, Math.min(1, progress));
+        const styles = getComputedStyle(image);
+        const translateY =
+            (parseFloat(styles.getPropertyValue("--tournament-bg-parallax-y")) || -50)
+            * clamped;
+        const translateX =
+            (parseFloat(styles.getPropertyValue("--tournament-bg-parallax-x")) || 30)
+            * clamped;
+        const baseRotate =
+            parseFloat(
+                styles.getPropertyValue("--tournament-bg-rotate")
+            ) || 0;
+        const parallaxRotate =
+            parseFloat(styles.getPropertyValue("--tournament-bg-parallax-rotate"))
+            || 5;
+        const rotate = baseRotate + (parallaxRotate * clamped);
+
+        image.style.transform =
+            `translate3d(${translateX}px, ${translateY}px, 0) rotate(${rotate}deg)`;
+
+    });
+}
+
+window.addEventListener(
+    "scroll",
+    () => {
+        if (tournamentParallaxFrame) {
+            return;
+        }
+
+        tournamentParallaxFrame = requestAnimationFrame(() => {
+            tournamentParallaxFrame = null;
+            updateTournamentParallax();
+        });
+    },
+    { passive: true }
+);
+
+window.addEventListener("resize", updateTournamentParallax);
+updateTournamentParallax();
+
+subscribeToParticipants();
 subscribeToBrackets();

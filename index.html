@@ -6,7 +6,7 @@
     <title>Турниры</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="sitePage">
 
 <div class="eventLogo">
     <div class="eventLogoNumber">33</div>
@@ -17,15 +17,13 @@
 <div id="message"></div>
 <div class="tournaments">
 
-    <div class="card" data-tournament="kicker">
-        <h2>Кикер</h2>
-        <p>Участников: <span id="count-kicker">0</span></p>
-        <button class="registerButton">Записаться</button>
-        <button class="participantsButton">Список участников</button>
-        <div class="participantsList hidden" id="list-kicker"></div>
-    </div>
-
     <div class="card" data-tournament="beerpong">
+        <img
+            src="assets/Beer.Pong.png"
+            class="tournamentBg tournamentBgBeerpong"
+            alt=""
+            aria-hidden="true"
+        />
         <h2>Бир-понг</h2>
         <p>Участников: <span id="count-beerpong">0</span></p>
         <button class="registerButton">Записаться</button>
@@ -33,7 +31,27 @@
         <div class="participantsList hidden" id="list-beerpong"></div>
     </div>
 
+    <div class="card" data-tournament="kicker">
+        <img
+            src="assets/kicker.png"
+            class="tournamentBg tournamentBgKicker"
+            alt=""
+            aria-hidden="true"
+        />
+        <h2>Кикер</h2>
+        <p>Участников: <span id="count-kicker">0</span></p>
+        <button class="registerButton">Записаться</button>
+        <button class="participantsButton">Список участников</button>
+        <div class="participantsList hidden" id="list-kicker"></div>
+    </div>
+
     <div class="card" data-tournament="jenga">
+        <img
+            src="assets/Jenga.png"
+            class="tournamentBg tournamentBgJenga"
+            alt=""
+            aria-hidden="true"
+        />
         <h2>Большая дженга</h2>
         <p>Участников: <span id="count-jenga">0</span></p>
         <button class="registerButton">Записаться</button>
@@ -45,8 +63,8 @@
 
 <section id="bracketrySection">
     <h2>Турнирные сетки</h2>
-    <div id="bracketry-kicker"></div>
     <div id="bracketry-beerpong"></div>
+    <div id="bracketry-kicker"></div>
     <div id="bracketry-jenga"></div>
 </section>
 

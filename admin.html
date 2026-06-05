@@ -16,29 +16,6 @@
 <div id="adminPanel" class="hidden">
 
     <div class="card">
-        <h2>Кикер</h2>
-        <button class="adminParticipantsToggle" data-tournament="kicker">
-            Список участников (<span id="admin-count-kicker">0</span>)
-        </button>
-        <div id="admin-list-kicker" class="adminParticipantsList hidden">
-            <div id="admin-kicker"></div>
-        </div>
-        <div id="admin-bracket-kicker" class="adminBracketArea"></div>
-        <button data-tournament="kicker" class="addParticipantBtn">
-            Добавить участника
-        </button>
-        <button data-tournament="kicker" class="clearTournamentBtn">
-            Очистить список Кикера
-        </button>
-        <button data-tournament="kicker" class="createBracketBtn">
-            Создать сетку
-        </button>
-        <button data-tournament="kicker" class="resetBracketBtn danger">
-            Сбросить сетку
-        </button>
-    </div>
-
-    <div class="card">
         <h2>Бир-понг</h2>
         <button class="adminParticipantsToggle" data-tournament="beerpong">
             Список участников (<span id="admin-count-beerpong">0</span>)
@@ -46,7 +23,6 @@
         <div id="admin-list-beerpong" class="adminParticipantsList hidden">
             <div id="admin-beerpong"></div>
         </div>
-        <div id="admin-bracket-beerpong" class="adminBracketArea"></div>
         <button data-tournament="beerpong" class="addParticipantBtn">
             Добавить участника
         </button>
@@ -59,6 +35,30 @@
         <button data-tournament="beerpong" class="resetBracketBtn danger">
             Сбросить сетку
         </button>
+        <div id="admin-bracket-beerpong" class="adminBracketArea"></div>
+    </div>
+
+    <div class="card">
+        <h2>Кикер</h2>
+        <button class="adminParticipantsToggle" data-tournament="kicker">
+            Список участников (<span id="admin-count-kicker">0</span>)
+        </button>
+        <div id="admin-list-kicker" class="adminParticipantsList hidden">
+            <div id="admin-kicker"></div>
+        </div>
+        <button data-tournament="kicker" class="addParticipantBtn">
+            Добавить участника
+        </button>
+        <button data-tournament="kicker" class="clearTournamentBtn">
+            Очистить список Кикера
+        </button>
+        <button data-tournament="kicker" class="createBracketBtn">
+            Создать сетку
+        </button>
+        <button data-tournament="kicker" class="resetBracketBtn danger">
+            Сбросить сетку
+        </button>
+        <div id="admin-bracket-kicker" class="adminBracketArea"></div>
     </div>
 
     <div class="card">
@@ -69,7 +69,6 @@
         <div id="admin-list-jenga" class="adminParticipantsList hidden">
             <div id="admin-jenga"></div>
         </div>
-        <div id="admin-bracket-jenga" class="adminBracketArea"></div>
         <button data-tournament="jenga" class="addParticipantBtn">
             Добавить участника
         </button>
@@ -82,6 +81,7 @@
         <button data-tournament="jenga" class="resetBracketBtn danger">
             Сбросить сетку
         </button>
+        <div id="admin-bracket-jenga" class="adminBracketArea"></div>
     </div>
 
 </div>

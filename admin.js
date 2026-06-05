@@ -2,7 +2,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebas
 import {
     getFirestore,
     collection,
-    getDocs,
     getDoc,
     addDoc,
     deleteDoc,
@@ -27,16 +26,17 @@ let participants = [];
 let isAddingParticipant = false;
 const brackets = {};
 const bracketSubscriptions = {};
+let participantsSubscription = null;
 
 let selectedTournament = null;
 
 const tournamentNames = {
-    kicker: "Кикер",
     beerpong: "Бир-понг",
+    kicker: "Кикер",
     jenga: "Большая дженга"
 };
 
-async function initAdmin() {
+function initAdmin() {
 
     const adminPanel = document.getElementById("adminPanel");
 
@@ -46,29 +46,31 @@ async function initAdmin() {
 
     renderLoadingState();
 
-    await loadParticipants();
-    renderAll();
+    subscribeToParticipants();
     subscribeToBrackets();
 }
 
-async function loadParticipants() {
+function subscribeToParticipants() {
 
-    console.time("loadParticipants");
-
-    try {
-
-        const snapshot = await getDocs(
-            collection(db, "participants")
-        );
-
-        participants = snapshot.docs.map(item => ({
-            id: item.id,
-            ...item.data()
-        }));
-
-    } finally {
-        console.timeEnd("loadParticipants");
+    if (participantsSubscription) {
+        return;
     }
+
+    participantsSubscription = onSnapshot(
+        collection(db, "participants"),
+        snapshot => {
+
+            participants = snapshot.docs.map(item => ({
+                id: item.id,
+                ...item.data()
+            }));
+
+            renderAll();
+        },
+        error => {
+            console.error(error);
+        }
+    );
 }
 
 function subscribeToBrackets() {
@@ -595,8 +597,8 @@ function updateAdminCounter(tournament, count) {
 
 function renderAll() {
 
-    renderTournament("kicker");
     renderTournament("beerpong");
+    renderTournament("kicker");
     renderTournament("jenga");
 }
 
@@ -732,18 +734,25 @@ window.deleteParticipant = async function(participantId) {
         return;
     }
 
-    await deleteDoc(
-        doc(db, "participants", participantId)
-    );
+    try {
 
-    participants = participants.filter(item =>
-        item.id !== participantId
-    );
+        await deleteDoc(
+            doc(db, "participants", participantId)
+        );
 
-    if (participant?.tournament) {
-        renderTournament(participant.tournament);
-    } else {
-        renderAll();
+        participants = participants.filter(item =>
+            item.id !== participantId
+        );
+
+        if (participant?.tournament) {
+            renderTournament(participant.tournament);
+        } else {
+            renderAll();
+        }
+
+    } catch (error) {
+        console.error(error);
+        alert("Не удалось удалить участника");
     }
 };
 
@@ -1006,23 +1015,38 @@ document
             return;
         }
 
-        const toDelete = participants.filter(
-            p => p.tournament === tournament
-        );
+        const originalButtonText = button.textContent;
 
-        await Promise.all(
-            toDelete.map(participant =>
-                deleteDoc(
-                    doc(db, "participants", participant.id)
+        button.disabled = true;
+        button.textContent = "Очищаем...";
+
+        try {
+
+            const toDelete = participants.filter(
+                p => p.tournament === tournament
+            );
+
+            await Promise.all(
+                toDelete.map(participant =>
+                    deleteDoc(
+                        doc(db, "participants", participant.id)
+                    )
                 )
-            )
-        );
+            );
 
-        participants = participants.filter(
-            p => p.tournament !== tournament
-        );
+            participants = participants.filter(
+                p => p.tournament !== tournament
+            );
 
-        renderTournament(tournament);
+            renderTournament(tournament);
+
+        } catch (error) {
+            console.error(error);
+            alert("Не удалось очистить список");
+        } finally {
+            button.disabled = false;
+            button.textContent = originalButtonText;
+        }
     });
 });
 
@@ -1080,6 +1104,9 @@ document
 
             alert(`Сетка турнира «${tournamentNames[tournament]}» создана`);
 
+        } catch (error) {
+            console.error(error);
+            alert("Не удалось создать сетку");
         } finally {
             button.disabled = false;
             button.textContent = originalButtonText;
@@ -1113,6 +1140,9 @@ document
             );
 
             brackets[tournament] = null;
+        } catch (error) {
+            console.error(error);
+            alert("Не удалось сбросить сетку");
         } finally {
             button.disabled = false;
             button.textContent = originalButtonText;
