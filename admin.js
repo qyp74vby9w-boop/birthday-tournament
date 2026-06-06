@@ -85,9 +85,14 @@ function subscribeToBrackets() {
             doc(db, "brackets", tournament),
             snapshot => {
 
-                brackets[tournament] = snapshot.exists()
-                    ? recalculateBracket(snapshot.data())
-                    : null;
+                if (snapshot.exists()) {
+                    const bracket = snapshot.data();
+                    brackets[tournament] = bracket.preliminaryRound
+                        ? syncPreliminaryWinners(bracket)
+                        : recalculateBracket(bracket);
+                } else {
+                    brackets[tournament] = null;
+                }
 
                 renderTournament(tournament);
             },
@@ -136,6 +141,12 @@ function createTournamentBracket(tournament, tournamentParticipants) {
     const entries = shuffleParticipants(
         tournamentParticipants.map(createBracketEntry)
     );
+
+    return createBracketFromEntries(tournament, entries);
+}
+
+function createBracketFromEntries(tournament, entries) {
+
     const firstRoundMatchCount = Math.ceil(entries.length / 2);
     const rounds = [];
 
@@ -223,6 +234,113 @@ function createTournamentBracket(tournament, tournamentParticipants) {
     return bracket;
 }
 
+function createPreliminaryTournamentBracket(tournament, tournamentParticipants) {
+
+    const entries = shuffleParticipants(
+        tournamentParticipants.map(createBracketEntry)
+    );
+    const preliminaryPlayerCount = (entries.length - 8) * 2;
+    const directMainPlayersCount = entries.length - preliminaryPlayerCount;
+    const mainEntries = entries.slice(0, directMainPlayersCount);
+    const preliminaryEntries = entries.slice(directMainPlayersCount);
+    const mainBracketEntries = [
+        ...mainEntries,
+        ...Array(preliminaryPlayerCount / 2).fill(null)
+    ];
+    const bracket = createBracketFromEntries(tournament, mainBracketEntries);
+
+    bracket.hasPreliminary = true;
+    bracket.mainSeedPlayers = mainEntries;
+    bracket.directMainPlayers = mainEntries;
+    bracket.mainBracketLocked = false;
+    bracket.preliminaryRound = {
+        title: "Предварительный раунд",
+        matches: []
+    };
+
+    for (let index = 0; index < preliminaryEntries.length; index += 2) {
+
+        const targetSlotIndex = directMainPlayersCount + index / 2;
+        const targetMatch = bracket.rounds[0].matches[Math.floor(targetSlotIndex / 2)];
+        const targetSlot = targetSlotIndex % 2 === 0 ? "player1" : "player2";
+
+        bracket.preliminaryRound.matches.push({
+            number: index / 2 + 1,
+            player1: preliminaryEntries[index] || null,
+            player2: preliminaryEntries[index + 1] || null,
+            winnerId: null,
+            winner: null,
+            targetRoundIndex: 0,
+            targetMatchNumber: targetMatch.number,
+            targetSlot
+        });
+    }
+
+    return syncPreliminaryWinners(bracket);
+}
+
+function createMainBracketFromPreliminary(tournament, bracket) {
+
+    const directMainPlayers = bracket.directMainPlayers
+        || bracket.mainSeedPlayers
+        || [];
+    const preliminaryMatches = bracket.preliminaryRound?.matches || [];
+    const incompleteMatch = preliminaryMatches.some(match =>
+        !getPreliminaryMatchWinner(match)
+    );
+
+    if (incompleteMatch) {
+        return {
+            error: "Сначала завершите все матчи предварительной сетки"
+        };
+    }
+
+    const preliminaryWinners = preliminaryMatches
+        .map(getPreliminaryMatchWinner)
+        .filter(Boolean);
+    const mainPlayers = [
+        ...directMainPlayers,
+        ...preliminaryWinners
+    ];
+
+    if (mainPlayers.length < 8) {
+        return {
+            error: "Недостаточно участников для основной сетки"
+        };
+    }
+
+    if (mainPlayers.length > 8) {
+        return {
+            error: "Ошибка формирования основной сетки: участников больше 8"
+        };
+    }
+
+    const mainBracket = createBracketFromEntries(tournament, mainPlayers);
+
+    return {
+        bracket: {
+            ...mainBracket,
+            hasPreliminary: true,
+            preliminaryRound: {
+                ...bracket.preliminaryRound,
+                matches: preliminaryMatches.map(match => {
+                    const winner = getPreliminaryMatchWinner(match);
+
+                    return {
+                        ...match,
+                        winnerId: winner?.id || match.winnerId || null,
+                        winner: winner || match.winner || null
+                    };
+                })
+            },
+            directMainPlayers,
+            mainSeedPlayers: directMainPlayers,
+            mainBracketLocked: false,
+            preliminaryCompletedAt: Date.now()
+        }
+    };
+}
+
 function createEmptyMatch(number) {
 
     return {
@@ -277,6 +395,56 @@ function getMatchWinner(match) {
     return [match.player1, match.player2].find(player =>
         player?.id === match.winnerId
     ) || null;
+}
+
+function getPreliminaryMatchWinner(match) {
+
+    return getMatchWinner(match);
+}
+
+function syncPreliminaryWinners(bracket) {
+
+    if (!bracket?.preliminaryRound?.matches?.length) {
+        return bracket;
+    }
+
+    const updatedBracket = JSON.parse(JSON.stringify(bracket));
+
+    updatedBracket.preliminaryRound.matches.forEach(match => {
+
+        const winner = getPreliminaryMatchWinner(match);
+        const targetMatch = updatedBracket.rounds?.[match.targetRoundIndex]
+            ?.matches
+            ?.find(item => item.number === match.targetMatchNumber);
+
+        if (!targetMatch || !match.targetSlot) {
+            return;
+        }
+
+        if ((targetMatch[match.targetSlot]?.id || "") !== (winner?.id || "")) {
+            targetMatch.winnerId = null;
+            targetMatch.winner = null;
+        }
+
+        targetMatch[match.targetSlot] = null;
+    });
+
+    updatedBracket.preliminaryRound.matches.forEach(match => {
+
+        const winner = getPreliminaryMatchWinner(match);
+        const targetMatch = updatedBracket.rounds?.[match.targetRoundIndex]
+            ?.matches
+            ?.find(item => item.number === match.targetMatchNumber);
+
+        if (!targetMatch || !match.targetSlot || !winner) {
+            return;
+        }
+
+        match.winner = winner;
+        targetMatch[match.targetSlot] = winner;
+    });
+
+    return recalculateBracket(updatedBracket);
 }
 
 function getTournamentChampion(bracket) {
@@ -565,6 +733,7 @@ function renderTournament(tournament) {
     );
 
     updateAdminCounter(tournament, filtered.length);
+    updatePreliminaryButtonState(tournament, filtered.length);
 
     if (participantsContainer && shouldRenderParticipants) {
         const participantsHtml = filtered.length === 0
@@ -582,6 +751,24 @@ function renderTournament(tournament) {
     if (bracketContainer) {
         bracketContainer.innerHTML = renderAdminBracketEditor(tournament);
     }
+}
+
+function updatePreliminaryButtonState(tournament, count) {
+
+    const button = document.querySelector(
+        `.createPreliminaryBracketBtn[data-tournament="${tournament}"]`
+    );
+
+    if (!button) {
+        return;
+    }
+
+    const needsPreliminary = count > 8;
+
+    button.disabled = !needsPreliminary;
+    button.title = needsPreliminary
+        ? ""
+        : "Предварительная сетка нужна только если участников больше 8";
 }
 
 function updateAdminCounter(tournament, count) {
@@ -634,6 +821,7 @@ function renderAdminBracketEditor(tournament) {
     return `
         <div class="adminBracketEditor">
             ${renderChampionCard(bracket)}
+            ${renderAdminPreliminaryRound(tournament, bracket)}
             <h3>Редактирование сетки</h3>
             <div class="adminBracketBoard">
                 ${bracket.rounds.map((round, roundIndex) => `
@@ -646,6 +834,63 @@ function renderAdminBracketEditor(tournament) {
                 `).join("")}
             </div>
         </div>
+    `;
+}
+
+function renderAdminPreliminaryRound(tournament, bracket) {
+
+    const matches = bracket?.preliminaryRound?.matches || [];
+
+    if (!matches.length) {
+        return "";
+    }
+
+    return `
+        <div class="preliminaryRound">
+            <h3>Предварительный раунд</h3>
+            <div class="preliminaryMatches">
+                ${matches.map(match => renderPreliminaryMatch(tournament, match)).join("")}
+            </div>
+        </div>
+    `;
+}
+
+function renderPreliminaryMatch(tournament, match) {
+
+    return `
+        <div class="adminMatchCard preliminaryMatchCard">
+            <div class="matchMeta">Матч ${match.number}</div>
+            ${renderPreliminarySlot(tournament, match, "player1")}
+            <div class="versus">VS</div>
+            ${renderPreliminarySlot(tournament, match, "player2")}
+        </div>
+    `;
+}
+
+function renderPreliminarySlot(tournament, match, slot) {
+
+    const player = match[slot];
+    const isWinner = Boolean(player && match.winnerId === player.id);
+    const isLoser = Boolean(player && match.winnerId && match.winnerId !== player.id);
+    const slotClasses = [
+        "bracket-slot",
+        "preliminarySlot",
+        isWinner ? "winner" : "",
+        isLoser ? "loser" : ""
+    ].filter(Boolean).join(" ");
+
+    if (!player) {
+        return `
+            <div class="bracket-slot empty">
+                <span class="slot-name">Ожидает соперника</span>
+            </div>
+        `;
+    }
+
+    return `
+        <button class="${slotClasses}" type="button" data-action="preliminary-winner" data-tournament="${tournament}" data-match-number="${match.number}" data-winner-id="${player.id}">
+            <span class="slot-name">${escapeHtml(player.label)}</span>
+        </button>
     `;
 }
 
@@ -758,6 +1003,23 @@ window.deleteParticipant = async function(participantId) {
 
 document.getElementById("adminPanel").addEventListener("click", event => {
 
+    const preliminaryButton = event.target.closest(
+        "[data-action='preliminary-winner']"
+    );
+
+    if (preliminaryButton) {
+        event.stopPropagation();
+        updatePreliminaryWinner(
+            preliminaryButton.dataset.tournament,
+            Number(preliminaryButton.dataset.matchNumber),
+            preliminaryButton.dataset.winnerId
+        ).catch(error => {
+            console.error(error);
+            alert("Не удалось обновить предварительный матч");
+        });
+        return;
+    }
+
     const button = event.target.closest(".bracketSlotButton");
 
     if (!button) {
@@ -790,6 +1052,51 @@ document.getElementById("adminPanel").addEventListener("click", event => {
     closeSlotMenus();
     openBracketParticipantPicker(slotData);
 });
+
+async function updatePreliminaryWinner(tournament, matchNumber, winnerId) {
+
+    const bracket = brackets[tournament];
+
+    if (!bracket?.preliminaryRound?.matches?.length) {
+        return;
+    }
+
+    const updatedBracket = JSON.parse(JSON.stringify(bracket));
+
+    updatedBracket.preliminaryRound.matches =
+        updatedBracket.preliminaryRound.matches.map(match => {
+
+            if (match.number !== matchNumber) {
+                return match;
+            }
+
+            const winner = [match.player1, match.player2].find(player =>
+                player?.id === winnerId
+            );
+
+            if (!winner) {
+                return match;
+            }
+
+            return {
+                ...match,
+                winnerId,
+                winner
+            };
+        });
+
+    const recalculatedBracket = syncPreliminaryWinners(updatedBracket);
+
+    recalculatedBracket.updatedAt = Date.now();
+
+    await setDoc(
+        doc(db, "brackets", tournament),
+        recalculatedBracket
+    );
+
+    brackets[tournament] = recalculatedBracket;
+    renderTournament(tournament);
+}
 
 document.addEventListener("click", event => {
 
@@ -912,6 +1219,14 @@ function getBracketParticipantIds(bracket) {
                     ids.add(player.id);
                 }
             });
+        });
+    });
+
+    (bracket?.preliminaryRound?.matches || []).forEach(match => {
+        [match.player1, match.player2].forEach(player => {
+            if (player?.id) {
+                ids.add(player.id);
+            }
         });
     });
 
@@ -1065,9 +1380,52 @@ document
 
         try {
 
-            const existingBracket = await getDoc(bracketRef);
+            const tournamentParticipants = participants.filter(
+                participant => participant.tournament === tournament
+            );
 
-            if (existingBracket.exists()) {
+            if (tournamentParticipants.length < 2) {
+
+                alert("Для создания сетки нужно минимум 2 участника");
+                return;
+            }
+
+            const existingBracketSnapshot = await getDoc(bracketRef);
+            const existingBracket = existingBracketSnapshot.exists()
+                ? existingBracketSnapshot.data()
+                : null;
+
+            if (existingBracket?.preliminaryRound?.matches?.length) {
+
+                const result = createMainBracketFromPreliminary(
+                    tournament,
+                    existingBracket
+                );
+
+                if (result.error) {
+                    alert(result.error);
+                    return;
+                }
+
+                await setDoc(
+                    bracketRef,
+                    result.bracket
+                );
+
+                brackets[tournament] = result.bracket;
+
+                alert(`Сетка турнира «${tournamentNames[tournament]}» создана`);
+                renderTournament(tournament);
+                return;
+            }
+
+            if (tournamentParticipants.length > 8) {
+
+                alert("Для турниров больше 8 участников используйте предварительную сетку");
+                return;
+            }
+
+            if (existingBracketSnapshot.exists()) {
 
                 const confirmed = confirm(
                     "Пересоздать сетку заново из всех текущих участников?"
@@ -1078,16 +1436,6 @@ document
                 }
 
                 await deleteDoc(bracketRef);
-            }
-
-            const tournamentParticipants = participants.filter(
-                participant => participant.tournament === tournament
-            );
-
-            if (tournamentParticipants.length < 2) {
-
-                alert("Для создания сетки нужно минимум 2 участника");
-                return;
             }
 
             const bracket = createTournamentBracket(
@@ -1108,6 +1456,77 @@ document
             console.error(error);
             alert("Не удалось создать сетку");
         } finally {
+            button.disabled = false;
+            button.textContent = originalButtonText;
+        }
+    });
+});
+
+document
+.querySelectorAll(".createPreliminaryBracketBtn")
+.forEach(button => {
+
+    button.addEventListener("click", async () => {
+
+        const tournament = button.dataset.tournament;
+        const bracketRef = doc(db, "brackets", tournament);
+        const originalButtonText = button.textContent;
+
+        button.disabled = true;
+        button.textContent = "Сохраняем...";
+
+        try {
+
+            const tournamentParticipants = participants.filter(
+                participant => participant.tournament === tournament
+            );
+
+            if (tournamentParticipants.length <= 8) {
+                alert("Предварительная сетка нужна только если участников больше 8");
+                return;
+            }
+
+            if (tournamentParticipants.length > 16) {
+                alert("Один предварительный раунд поддерживает максимум 16 участников");
+                return;
+            }
+
+            const existingBracket = await getDoc(bracketRef);
+
+            if (existingBracket.exists()) {
+
+                const confirmed = confirm(
+                    "Пересоздать сетку заново из всех текущих участников?"
+                );
+
+                if (!confirmed) {
+                    return;
+                }
+
+                await deleteDoc(bracketRef);
+            }
+
+            const bracket = createPreliminaryTournamentBracket(
+                tournament,
+                tournamentParticipants
+            );
+
+            await setDoc(
+                bracketRef,
+                bracket
+            );
+
+            brackets[tournament] = bracket;
+
+            alert(
+                `Предварительная сетка турнира «${tournamentNames[tournament]}» создана`
+            );
+
+        } catch (error) {
+            console.error(error);
+            alert("Не удалось создать предварительную сетку");
+        } finally {
+
             button.disabled = false;
             button.textContent = originalButtonText;
         }
@@ -1140,6 +1559,7 @@ document
             );
 
             brackets[tournament] = null;
+            renderTournament(tournament);
         } catch (error) {
             console.error(error);
             alert("Не удалось сбросить сетку");
