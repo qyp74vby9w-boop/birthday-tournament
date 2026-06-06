@@ -27,6 +27,7 @@ const brackets = {};
 const bracketryInstances = {};
 const bracketryDataCache = {};
 const bracketSubscriptions = {};
+const completedBracketExpanded = {};
 let participantsSubscription = null;
 let bracketryModulePromise = null;
 
@@ -112,6 +113,7 @@ async function renderBracketry(tournament, bracket) {
         }
 
         delete bracketryDataCache[tournament];
+        delete completedBracketExpanded[tournament];
 
         container.innerHTML = `
             <div class="bracketryTournament">
@@ -122,8 +124,17 @@ async function renderBracketry(tournament, bracket) {
         return;
     }
 
+    const isCompleted = isTournamentCompleted(normalizedBracket);
+    if (!isCompleted) {
+        completedBracketExpanded[tournament] = false;
+    }
+    const isExpanded = !isCompleted || completedBracketExpanded[tournament] === true;
     const bracketryData = convertBracketToBracketryData(normalizedBracket);
-    const bracketryDataKey = getBracketRenderKey(normalizedBracket);
+    const bracketryDataKey = getBracketRenderKey(
+        normalizedBracket,
+        isCompleted,
+        isExpanded
+    );
 
     if (
         bracketryInstances[tournament]
@@ -143,12 +154,23 @@ async function renderBracketry(tournament, bracket) {
         <div class="bracketryTournament">
             <h3>${escapeHtml(tournamentNames[tournament])}</h3>
             ${renderChampionCard(tournament, normalizedBracket)}
-            ${renderPreliminaryRound(tournament, normalizedBracket)}
-            <div class="bracketryScroller">
-                <div class="bracketryWrapper"></div>
-            </div>
+            ${renderCompletedBracketToggle(tournament, isCompleted, isExpanded)}
+            ${isExpanded ? renderPreliminaryRound(tournament, normalizedBracket) : ""}
+            ${isExpanded
+                ? `
+                    <div class="bracketryScroller">
+                        <div class="bracketryWrapper"></div>
+                    </div>
+                `
+                : ""
+            }
         </div>
     `;
+
+    if (!isExpanded) {
+        bracketryDataCache[tournament] = bracketryDataKey;
+        return;
+    }
 
     const scroller = container.querySelector(".bracketryScroller");
     const wrapper = container.querySelector(".bracketryWrapper");
@@ -195,6 +217,27 @@ async function renderBracketry(tournament, bracket) {
         console.error(error);
         wrapper.innerHTML = "<p>Bracketry не загрузилась. Старая сетка ниже остаётся доступной.</p>";
     }
+}
+
+function isTournamentCompleted(bracket) {
+
+    const finalRound = bracket?.rounds?.[bracket.rounds.length - 1];
+    const finalMatch = finalRound?.matches?.[0];
+
+    return Boolean(bracket?.rounds?.length && finalMatch?.winnerId);
+}
+
+function renderCompletedBracketToggle(tournament, isCompleted, isExpanded) {
+
+    if (!isCompleted) {
+        return "";
+    }
+
+    return `
+        <button class="completedBracketToggle" type="button" data-action="toggle-completed-brackets" data-tournament="${tournament}">
+            ${isExpanded ? "Скрыть сетки" : "Показать сетки"}
+        </button>
+    `;
 }
 
 function renderPreliminaryRound(tournament, bracket) {
@@ -254,7 +297,7 @@ function renderPreliminarySlot(tournament, match, slot) {
     `;
 }
 
-function getBracketRenderKey(bracket) {
+function getBracketRenderKey(bracket, isCompleted = false, isExpanded = true) {
 
     const mainKey = bracket.rounds.map((round, roundIndex) => {
         const title = round.title || `Раунд ${roundIndex + 1}`;
@@ -277,7 +320,7 @@ function getBracketRenderKey(bracket) {
         ].join(":"))
         .join("|");
 
-    return `${mainKey};preliminary[${preliminaryKey}]`;
+    return `${mainKey};preliminary[${preliminaryKey}];completed:${isCompleted};expanded:${isExpanded}`;
 }
 
 function enablePageWheelOverBracketry(scroller) {
@@ -900,6 +943,25 @@ async function updatePreliminaryWinner(tournament, matchNumber, winnerId) {
 }
 
 document.addEventListener("click", event => {
+
+    const completedToggle = event.target.closest(
+        "[data-action='toggle-completed-brackets']"
+    );
+
+    if (completedToggle) {
+        const tournament = completedToggle.dataset.tournament;
+
+        completedBracketExpanded[tournament] =
+            completedBracketExpanded[tournament] !== true;
+
+        renderBracketry(
+            tournament,
+            brackets[tournament]
+        ).catch(error => {
+            console.error(error);
+        });
+        return;
+    }
 
     const preliminaryButton = event.target.closest(
         "[data-action='preliminary-winner']"

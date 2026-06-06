@@ -598,6 +598,31 @@ select:focus{
         0 0 28px rgba(243,211,122,.12);
 }
 
+.completedBracketToggle{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:38px;
+    margin:0 0 18px;
+    padding:8px 16px;
+    border:1px solid rgba(243,211,122,.42);
+    border-radius:10px;
+    background:rgba(10,10,10,.92);
+    color:#f3d37a;
+    font-size:14px;
+    font-weight:600;
+    box-shadow:
+        0 0 14px rgba(243,211,122,.16),
+        inset 0 0 14px rgba(243,211,122,.05);
+}
+
+.completedBracketToggle:hover{
+    border-color:rgba(243,211,122,.7);
+    box-shadow:
+        0 0 18px rgba(243,211,122,.24),
+        inset 0 0 16px rgba(243,211,122,.08);
+}
+
 .bracketryScroller{
     overflow-x:auto;
     overflow-y:visible;
